@@ -1280,9 +1280,38 @@ func (s *BgpServer) propagateUpdateToNeighbors(source *peer, newPath *table.Path
 	var gBestList, gOldList, bestList, oldList []*table.Path
 	var mpathList [][]*table.Path
 	if source == nil || !source.isRouteServerClient() {
+		// if the newPath is a withdrawal and this path has the same preference
+		// as the mPathList, then advertise the withdrawal instead. The equally
+		// preferred routes will also be advertised down the line. The path
+		// should be different from the new path.
+		// has the same or less preference than the
 		gBestList, gOldList, mpathList = dstsToPaths(table.GLOBAL_RIB_NAME, 0, dsts)
+		if newPath.IsWithdraw {
+			advWithdraw := false
+			if mpathList != nil && len(mpathList) > 0 {
+				multiPathArr := mpathList[0]
+				if gOldList != nil && len(gOldList) > 0 {
+					if !gOldList[0].Equal(multiPathArr[0]) &&
+						gOldList[0].Compare(multiPathArr[0]) == 0 {
+						advWithdraw = true
+					}
+				}
+			}
+
+			if advWithdraw {
+				bestList = func() []*table.Path {
+					l := make([]*table.Path, 0, len(dsts))
+					for _, d := range dsts {
+						l = append(l, d.GetWithdrawnPath()...)
+					}
+					return l
+				}()
+				s.notifyBestWatcher(bestList, [][]*table.Path{bestList})
+			}
+		}
 		s.notifyBestWatcher(gBestList, mpathList)
 	}
+
 	family := newPath.GetRouteFamily()
 	for _, targetPeer := range s.neighborMap {
 		if (source == nil && targetPeer.isRouteServerClient()) || (source != nil && source.isRouteServerClient() != targetPeer.isRouteServerClient()) {
