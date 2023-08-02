@@ -1305,7 +1305,15 @@ func (s *BgpServer) propagateUpdateToNeighbors(source *peer, newPath *table.Path
 				return l
 			}()
 			//s.notifyBestWatcher(withdrawnPath, [][]*table.Path{withdrawnPath})
-			mpathList = append(mpathList, withdrawnPath)
+			// If the withdrawn path and the path to advertise are the same, don't
+			// do a redundant withdrawal
+			if gBestList != nil && withdrawnPath != nil {
+				if len(gBestList) == len(withdrawnPath) &&
+					len(gBestList) > 0 &&
+					!gBestList[0].Equal(withdrawnPath[0]) {
+					mpathList = append(mpathList, withdrawnPath)
+				}
+			}
 		}
 		s.notifyBestWatcher(gBestList, mpathList)
 	}
