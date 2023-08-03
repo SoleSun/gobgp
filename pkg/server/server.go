@@ -1286,7 +1286,7 @@ func (s *BgpServer) propagateUpdateToNeighbors(source *peer, newPath *table.Path
 		// should be different from the new path. If
 		// has the same or less preference than the
 		gBestList, gOldList, mpathList = dstsToPaths(table.GLOBAL_RIB_NAME, 0, dsts)
-		if newPath.IsWithdraw {
+		if newPath.IsWithdraw  && table.UseMultiplePaths.Enabled {
 			appendWithdraw := true
 			withdrawnPath := func() []*table.Path {
 				l := make([]*table.Path, 0, len(dsts))
