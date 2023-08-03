@@ -1287,16 +1287,6 @@ func (s *BgpServer) propagateUpdateToNeighbors(source *peer, newPath *table.Path
 		// has the same or less preference than the
 		gBestList, gOldList, mpathList = dstsToPaths(table.GLOBAL_RIB_NAME, 0, dsts)
 		if newPath.IsWithdraw {
-			//advWithdraw := false
-			//if mpathList != nil && len(mpathList) > 0 {
-			//	multiPathArr := mpathList[0]
-			//	if gOldList != nil && len(gOldList) > 0 {
-			//		if !gOldList[0].Equal(multiPathArr[0]) &&
-			//			gOldList[0].Compare(multiPathArr[0]) >= 0 {
-			//			advWithdraw = true
-			//		}
-			//	}
-			//}
 			withdrawnPath := func() []*table.Path {
 				l := make([]*table.Path, 0, len(dsts))
 				for _, d := range dsts {
@@ -1304,7 +1294,6 @@ func (s *BgpServer) propagateUpdateToNeighbors(source *peer, newPath *table.Path
 				}
 				return l
 			}()
-			//s.notifyBestWatcher(withdrawnPath, [][]*table.Path{withdrawnPath})
 			mpathList = append(mpathList, withdrawnPath)
 		}
 		s.notifyBestWatcher(gBestList, mpathList)
