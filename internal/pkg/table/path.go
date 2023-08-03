@@ -1028,7 +1028,7 @@ func (path *Path) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// Compare returns < 0 if the rhs is more preferred and > 0 if lhs
+// Compare returns > 0 if the lhs is more preferred and < 0 if rhs
 func (lhs *Path) Compare(rhs *Path) int {
 	if lhs.IsLocal() && !rhs.IsLocal() {
 		return 1
