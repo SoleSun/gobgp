@@ -1045,7 +1045,7 @@ func (lhs *Path) Compare(rhs *Path) int {
 	lp1, _ := lhs.GetLocalPref()
 	lp2, _ := rhs.GetLocalPref()
 	if lp1 != lp2 {
-		return int(lp1 - lp2)
+		return int(lp1) - int(lp2)
 	}
 
 	l1 := lhs.GetAsPathLen()
@@ -1057,12 +1057,12 @@ func (lhs *Path) Compare(rhs *Path) int {
 	o1, _ := lhs.GetOrigin()
 	o2, _ := rhs.GetOrigin()
 	if o1 != o2 {
-		return int(o2 - o1)
+		return int(o2) - int(o1)
 	}
 
 	m1, _ := lhs.GetMed()
 	m2, _ := rhs.GetMed()
-	return int(m2 - m1)
+	return int(m2) - int(m1)
 }
 
 func (v *Vrf) ToGlobalPath(path *Path) error {
