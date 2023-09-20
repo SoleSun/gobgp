@@ -1286,7 +1286,7 @@ func (s *BgpServer) propagateUpdateToNeighbors(source *peer, newPath *table.Path
 		// should be different from the new path. If
 		// has the same or less preference than the
 		gBestList, gOldList, mpathList = dstsToPaths(table.GLOBAL_RIB_NAME, 0, dsts)
-		if newPath.IsWithdraw  && table.UseMultiplePaths.Enabled {
+		if newPath.IsWithdraw && table.UseMultiplePaths.Enabled {
 			appendWithdraw := true
 			withdrawnPath := func() []*table.Path {
 				l := make([]*table.Path, 0, len(dsts))
@@ -1295,23 +1295,25 @@ func (s *BgpServer) propagateUpdateToNeighbors(source *peer, newPath *table.Path
 				}
 				return l
 			}()
-			// If the next best path is a withdrawal, then no need to make
-			// a redundant withdrawal
-			// If the withdrawn path is less preferred than the current best
-			// route than no need to notify the withdrawal either.
-			for i := range gBestList {
-				bestPath := gBestList[i]
+			if len(withdrawnPath) > 0 && len(gBestList) > 0 {
+				// We only compare the first best path with the first withdrawn
+				// path.
+				// If the next best path is a withdrawal, then no need to make
+				// a redundant withdrawal
+				// If the withdrawn path is less preferred than the current best
+				// route than no need to notify the withdrawal either.
+				bestPath := gBestList[0]
 				if bestPath != nil {
 					if bestPath.IsWithdraw {
 						appendWithdraw = false
-						break
 					}
 
-					if withdrawnPath[i].Compare(bestPath) < 0 {
+					if withdrawnPath[0].Compare(bestPath) < 0 {
 						appendWithdraw = false
-						break
 					}
 				}
+			} else {
+				appendWithdraw = false
 			}
 
 			if appendWithdraw {
